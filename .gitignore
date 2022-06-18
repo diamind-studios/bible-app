@@ -7,6 +7,8 @@
 
 # testing
 /coverage
+init.sh
+bible.db
 
 # production
 /build
