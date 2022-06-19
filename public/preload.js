@@ -1,5 +1,5 @@
 const {contextBridge} = require('electron');
-//const {getVersions, getBook} = require('../src/controllers/data');
+const {getVersions, getBook} = require('../src/controllers/data');
 
 // All of the Node.js APIs are available in the preload process.
 // It has the same sandbox as a Chrome extension.
