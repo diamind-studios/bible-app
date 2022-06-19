@@ -13,7 +13,9 @@ const showSearch = () => {
 
 const submitSearch = (e) => {
   e.preventDefault()
-
+  const searchText = document.getElementById('search-box').value
+  if (!searchText) return
+  window.DB.getPassage(searchText)
 }
 
 export { showSearch, submitSearch }

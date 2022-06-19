@@ -15,14 +15,11 @@ window.addEventListener('DOMContentLoaded', () => {
 
 // These functions are exposed for calling from front end
 contextBridge.exposeInMainWorld('DB', {
-  getPassage: (searchText, displayAreas=undefined) => {
-    getBook(searchText, displayAreas)
+  getPassage: (searchText) => {
+    getBook(searchText)
   },
   newTab: (tabId) => {
     getVersions(tabId)
-  },
-  test: () => {
-      console.log('test success')
   }
 })
 
