@@ -10,13 +10,15 @@ const swapFont = (currentFont='0') => { //swaps out fonts based on a list
 }
 
 const changeSize = (sign='+') => {
-  const text = document.getElementById('scripture')
+  const tabs = document.getElementsByClassName('tab')
   const fontElm = document.getElementById('font-size')
   const fontSize = Number(fontElm.innerText) + Number(sign+'1')
   if (fontSize <= 6 || fontSize >= 25) {
     return
   }
-  text.style.fontSize = fontSize+'pt'
+  for (let tab of tabs) {
+    tab.style.fontSize = fontSize+'pt'
+  }
   fontElm.innerText = fontSize
 }
 

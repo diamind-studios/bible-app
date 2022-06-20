@@ -2,46 +2,32 @@ const {buildQuery, joinVerses, joinWords, displayTag, buildWordBox, parseSearchQ
 const sqlite3 = require('sqlite3').verbose();
 var db = new sqlite3.Database('./src/bible.db');
 
-const getText = async (id, payload) => {
-  joinFunc = {
-    "translation": joinVerses,
-    "source": joinWords
-  }
-
-  const query = await buildQuery(payload)
-  await db.all(query, async (err, rows) => {
-    //everything you wanna do with the data returned has to go in here
-    const output = document.createElement('div')
-
-    const head = document.createElement('h2')
-    head.innerHTML = payload.fullTextName.toUpperCase()
-    output.appendChild(head)
-    const tab = await joinFunc[payload.type](rows)
-    const fontSize = Number(document.getElementById('font-size').innerText)
-    tab.style.fontSize = fontSize+'pt'
-    output.appendChild(tab)
-    output.innerHTML += `<label>${payload.fullTextName}</label><br>LICENSE: <i>${payload.license||'Public Domain'}</i>`
-    await displayTag('tab'+id, output)
-    
-    for (word of document.getElementById('tab'+id).getElementsByClassName('word')) {
-      word.addEventListener('click', (event) => {
-        //create display box. Then call getWordDetails and pass id of popup box
-        //console.log(event.target.getAttribute('value')) 
-        getWordDetails(event.target)
-      })
+const getBook = async (searchText) => {
+  const searchPayload = await parseSearchQuery(searchText)
+  const query = `select 
+    name
+  from books b 
+  where b.name like '${searchPayload.book}%'
+  limit 1
+  ;`
+  db.all(query, async (err, rows) => {
+    if (rows.length < 1) return
+    searchPayload.book = rows[0].name
+    for (element of document.getElementById('tabs').children) {
+      getTextInfo(element.id, searchPayload)
     }
+    display('bible-header',`${searchPayload.book} ${searchPayload.chapter}`)
   });
 }
 
 const getTextInfo = async (id, searchPayload) => {
   let payload = {searchPayload}
   //!payload.id = id
-  const select = document.getElementById(id)
-  const selectedIndex = select.selectedIndex
-  payload.typeId = select[selectedIndex].value//document get chosen translation
-  payload.type = select[selectedIndex].getAttribute('type')
-  payload.textName = select[selectedIndex].text
-  
+  const tabBody = document.getElementById(id)
+  const title = tabBody.getElementsByClassName('topbar-icon')[0]
+  payload.typeId = title.getAttribute('value')//document get chosen translation
+  payload.type = title.getAttribute('type')
+  payload.textName = title.innerText
   const queries = {
     'translation': `select 
       full_name, 
@@ -54,28 +40,36 @@ const getTextInfo = async (id, searchPayload) => {
     from sources s 
     where s.id = ${payload.typeId};`
   }
-  await db.all(queries[payload.type], async (err, rows) => {
+  db.all(queries[payload.type], async (err, rows) => {
     payload.fullTextName = rows[0].full_name
-    payload.license = rows[0].license
+    payload.license = rows[0].license||'N/A'
     getText(id, payload)
   });
 }
 
-const getBook = async (searchText) => {
-  const searchPayload = await parseSearchQuery(searchText)
-  const query = `select 
-    name
-  from books b 
-  where b.name like '${searchPayload.book}%'
-  limit 1
-  ;`
-  await db.all(query, async (err, rows) => {
-    if (rows.length < 1) return
-    searchPayload.book = rows[0].name
-    for (element of document.getElementById('tabs').children) {
-      getTextInfo(element.id, searchPayload)
+const getText = async (id, payload) => {
+  joinFunc = {
+    "translation": joinVerses,
+    "source": joinWords
+  }
+  const query = await buildQuery(payload)
+  console.log(query)
+  db.all(query, async (err, rows) => {
+    const output = await document.getElementById(id).getElementsByClassName('scripture-text')[0]
+    const tab = await joinFunc[payload.type](rows)
+    //!no longer needed const fontSize = Number(document.getElementById('font-size').innerText)
+    //! tab.style.fontSize = fontSize+'pt'
+    output.innerHTML = tab
+    output.innerHTML += `<label class="font-bold">${payload.fullTextName.toUpperCase()}</label><p>LICENSE: <i class="text-orange-400">${payload.license||'Public Domain'}</i></p>`
+    //await displayTag('tab'+id, output)
+    
+    for (word of document.getElementById(id).getElementsByClassName('word')) {
+      word.addEventListener('click', (event) => {
+        //create display box. Then call getWordDetails and pass id of popup box
+        //console.log(event.target.getAttribute('value')) 
+        getWordDetails(event.target)
+      })
     }
-    display('bible-header',`${searchPayload.book} ${searchPayload.chapter}`)
   });
 }
 

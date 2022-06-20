@@ -26,26 +26,30 @@ const buildQuery = async (payload) => {
     
   //joins rows from db
   const joinVerses = async (rows, delimiter=' ') => {
-    const tab = document.createElement('span')
-    tab.classList.add('bibleText')
-    output = ''
+    //const tab = document.createElement('span')
+    //tab.classList.add('bibleText')
+    let output = ''
     for (let row of rows) {
-      output += `<b>${row.verse}.</b> ${delimiter}${row.verse_text}<br><br>`
+      output += `<p class="my-4"><b>${row.verse}.</b> ${delimiter}${row.verse_text}</p>`
     }
-    tab.innerHTML = output||'<i>Passage unavailable for the selected Bible.</i>'
-    return tab
+    //tab.innerHTML = output||'<i>Passage unavailable for the selected Bible.</i>'
+    //return tab
+    return output||'<i>Passage unavailable for the selected Bible.</i>'
   }
     
   const joinWords = async (rows, delimiter=' ') => {
-    const tab = document.createElement('span')
-    tab.classList.add('bibleText')
+    //const tab = document.createElement('span')
+    //tab.classList.add('bibleText')
+    let output = ''
     if (!rows || rows.length < 1) {
       console.log('empty')
-      tab.innerHTML = '<i>Passage unavailable for the selected Bible.</i><br><br>'
-      return tab
+      //tab.innerHTML = '<i>Passage unavailable for the selected Bible.</i><br><br>'
+      //return tab
+      return '<i>Passage unavailable for the selected Bible.</i><br><br>'
     }
     let verse = 1
-    tab.innerHTML = `<b>${verse}.</b> `
+    output += `<p class="my-4"><b>${verse}.</b> `
+    //tab.innerHTML = `<b>${verse}.</b> `
   
     const wordPrototype = document.createElement('span')
     wordPrototype.classList.add('word')
@@ -56,19 +60,20 @@ const buildQuery = async (payload) => {
     for (row of rows) {
       if (row.verse != verse) { // add verse number
         verse = row.verse
-        chapterHtml += `<br><br><b>${row.verse}.</b> `
+        chapterHtml += `</p><p class="my-4"><b>${row.verse}.</b> `
       }
       const word = wordPrototype.cloneNode()
       word.innerText = row.word
       word.setAttribute("value", row.p_key);
       chapterHtml += ' ' + word.outerHTML + ' '
     }
-    chapterHtml += '<br><br>'
-    tab.innerHTML += chapterHtml
+    chapterHtml += '</p>'
+    //tab.innerHTML += chapterHtml
+    output += chapterHtml
     const end = new Date().getTime()
     console.log('end',end)
     console.log((end - start)/1000,'seconds')
-    return tab
+    return output
   }
   
   const buildWordBox = async(row) => {
