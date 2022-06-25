@@ -30,10 +30,5 @@ const SideBarIcon = ({ id=null, icon, text = 'tooltip ⚡️', click=() => conso
     </div>
   );
 };
-/*w-auto p-2 m-2 min-w-max left-14
-        rounded-md shadow-md
-        text-white bg-gray-900
-        text-xs font-bold
-        transition-all duration-150 scale-0 origin-left;*/
 
 export default SideBar;

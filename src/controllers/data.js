@@ -16,7 +16,8 @@ const getBook = async (searchText) => {
     for (element of document.getElementById('tabs').children) {
       getTextInfo(element.id, searchPayload)
     }
-    display('bible-header',`${searchPayload.book} ${searchPayload.chapter}`)
+    display('bible-book',`${searchPayload.book}`)
+    display('bible-chapter',`${searchPayload.chapter}`)
   });
 }
 
@@ -53,20 +54,14 @@ const getText = async (id, payload) => {
     "source": joinWords
   }
   const query = await buildQuery(payload)
-  console.log(query)
   db.all(query, async (err, rows) => {
     const output = await document.getElementById(id).getElementsByClassName('scripture-text')[0]
     const tab = await joinFunc[payload.type](rows)
-    //!no longer needed const fontSize = Number(document.getElementById('font-size').innerText)
-    //! tab.style.fontSize = fontSize+'pt'
     output.innerHTML = tab
     output.innerHTML += `<label class="font-bold">${payload.fullTextName.toUpperCase()}</label><p>LICENSE: <i class="text-orange-400">${payload.license||'Public Domain'}</i></p>`
-    //await displayTag('tab'+id, output)
     
     for (word of document.getElementById(id).getElementsByClassName('word')) {
       word.addEventListener('click', (event) => {
-        //create display box. Then call getWordDetails and pass id of popup box
-        //console.log(event.target.getAttribute('value')) 
         getWordDetails(event.target)
       })
     }
@@ -78,7 +73,7 @@ const getVersions = async (tabId,selected='2translation') => { // selected param
   union select name, id, 'translation' as type from translations t where complete
   order by type desc, id;`
   getBook('')
-  await db.all(query, async (err, rows) => {
+  db.all(query, async (err, rows) => {
     var output = ''
     for (row of rows) {
       if (row.id == 1) output+= `<optgroup label="${row.type[0].toUpperCase()+row.type.slice(1)}:">`
@@ -102,14 +97,52 @@ const getWordDetails = async (wordElm) => {
       on p.id = t.parsing
     where t.source_id||'|'||t.word_number||'|'||t.book||'|'||t.chapter||'|'||t.verse = '${pKey}'`
 
-  await db.all(query, async (err, rows) => {
+  db.all(query, async (err, rows) => {
     if (err) {console.error(err)}
     const wordBox = await buildWordBox(rows[0])
     document.getElementById('popup-box').innerHTML = wordBox
   })
 }
 
+const changePassage = async (type,sign) => {
+  const apocryphal = 0
+  const chapter = Number(document.getElementById('bible-chapter').innerText)
+  const book = document.getElementById('bible-book').innerText
+  const queries = {
+    'chapter': `select 
+      distinct
+        b.id, b.name, v.chapter
+      from books b
+      inner join verses v
+        on v.book_id = b.id
+      where b.apocryphal in (${apocryphal})
+      order by b.id, v.chapter
+    ;`,
+    'book': `select 
+      distinct
+        b.name
+      from books b
+      where b.apocryphal in (${apocryphal})
+    ;`
+  }
+  db.all(queries[type], async (err, rows) => {
+    let index
+    let queryString = ''
+    for (let i in rows) {
+      if (rows[i].name.toUpperCase() === book && (rows[i].chapter == chapter || type == 'book')) { //this is the logic for next/previous book
+        index = Number(i) + Number(sign+'1')
+        break
+      }
+    }
+    if (index > rows.length-1) index = 0
+    else if (index < 0) index = rows.length-1
+    queryString = rows[index].name + ' ' + (rows[index].chapter||'1')
+    getBook(queryString)
+  });
+}
+
 module.exports = {
   'getBook': getBook,
-  'getVersions': getVersions
+  'getVersions': getVersions,
+  'changePassage': changePassage
 }

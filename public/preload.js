@@ -1,5 +1,5 @@
 const {contextBridge} = require('electron');
-const {getVersions, getBook} = require('../src/controllers/data');
+const {getVersions, getBook, changePassage} = require('../src/controllers/data');
 
 // All of the Node.js APIs are available in the preload process.
 // It has the same sandbox as a Chrome extension.
@@ -17,6 +17,9 @@ window.addEventListener('DOMContentLoaded', () => {
 contextBridge.exposeInMainWorld('DB', {
   getPassage: (searchText) => {
     getBook(searchText)
+  },
+  changePassage: (type, sign) => {
+    changePassage(type, sign)
   },
   newTab: (tabId) => {
     getVersions(tabId)

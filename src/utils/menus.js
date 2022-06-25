@@ -17,4 +17,8 @@ const submitSearch = (e, searchText=document.getElementById('search-box').value)
   window.DB.getPassage(searchText)
 }
 
-export { showSearch, submitSearch }
+const changePassage = (type, sign) => {
+  window.DB.changePassage(type, sign)
+}
+
+export { showSearch, submitSearch, changePassage }
